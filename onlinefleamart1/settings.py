@@ -92,7 +92,7 @@ WSGI_APPLICATION = 'onlinefleamart1.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'd3ighei4b7to6o',
         'USER': 'qrfmitwpiohpdo',
         'PASSWORD': '99787615c8c276055b08271d8eb14c116c95df4bb6db8c0366970cce87748dff',
