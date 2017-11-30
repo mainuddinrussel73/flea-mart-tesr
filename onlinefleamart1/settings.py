@@ -27,7 +27,7 @@ SECRET_KEY = 'b0bqz=a@hqtl=8i%jyh3jl7k+_(s1k^)h9mpq2e9p4h_ozmf-j'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['fleamartbd.herokuapp.com']
+ALLOWED_HOSTS = ['onlinefleamartbd.herokuapp.com']
 
 
 # Application definition
