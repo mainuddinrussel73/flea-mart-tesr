@@ -93,7 +93,11 @@ WSGI_APPLICATION = 'onlinefleamart1.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'NAME': 'd3ighei4b7to6o',
+        'USER': 'qrfmitwpiohpdo',
+        'PASSWORD': '99787615c8c276055b08271d8eb14c116c95df4bb6db8c0366970cce87748dff',
+        'HOST': 'ec2-54-235-210-115.compute-1.amazonaws.com',
+        'PORT': '5432',
     }
 }
 
