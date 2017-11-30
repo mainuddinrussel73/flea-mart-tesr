@@ -25,7 +25,7 @@ MEDIA_DIR = os.path.join(BASE_DIR,'media')
 SECRET_KEY = 'b0bqz=a@hqtl=8i%jyh3jl7k+_(s1k^)h9mpq2e9p4h_ozmf-j'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['onlinefleamartbd.herokuapp.com']
 
