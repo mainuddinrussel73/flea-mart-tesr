@@ -1,1 +1,1 @@
-web: gunicorn Flea.wsgi --log-file -
+web: gunicorn onlinefleamart1.wsgi --log-file -
