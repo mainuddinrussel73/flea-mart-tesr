@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+{% extends "firstapp/base.html" %}
+{% load static from staticfiles %}
+{% load embed_video_tags %}
+
+  {% block body_block %}
+  <ul class="breadcrumb">
+
+      <li><a href="{% url 'User:home' %}">{{ user }} Home</a></li>
+      <li class="active"><a href="">Auction</a></li>
+
+  </ul>
+
+  <script type="text/javascript">
+
+    $(document).on('submit','#bid_form',function(e){
+          e.preventDefault();
+
+          $.ajax({
+            type : 'POST',
+            url  : "{% url 'User:bids' %}",
+            data :  {
+                co : $('#comm').val(),
+                slug : $('#slug').val(),
+                csrfmiddlewaretoken : $('input[name=csrfmiddlewaretoken]').val()
+            },
+
+            success:function(data){
+                // alert("user");
+                $('#comm').val('');
+
+                // $('#media-some').append("<h4 id='commentss' class='media-heading'>"+ data.user +"<span>"+ data.timestemp  +"/ <a href='javascript:;'>Reply</a></span></h4><p id='sss'>"+data.comm+"</p>")
+                  var x = document.getElementById("bid_form");
+                  x.style.display = "none";
+                  var y = document.getElementById("btnbid");
+                  y.style.display = "none";
+                  var yy = document.getElementById("bidd");
+                  yy.innerText = data.bid;
+
+
+
+
+            }
+          })
+      });
+  </script>
+
+  <div class="formss">
+
+
+    <form id="bid_form">
+      {% csrf_token %}
+      <!-- <button class="btn btn-primary" type="submit">Post a Comment</button> -->
+      <div id="" class="form-group">
+          <input placeholder="Bids ......." form="bid_form"  class="form-control" id="comm" rows="8" ></input>
+          <button class="btn btn-primary" type="submit" id="senderr">BID</button>
+      </div>
+
+      <!-- <input id="h" type="hidden" name="id" value="{{ user }}"> -->
+      <input id="slug" type="hidden" name="id" value="{{ item.slug }}">
+    </form>
+  </div>
+
+
+    {% endblock %}

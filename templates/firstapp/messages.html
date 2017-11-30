@@ -1,0 +1,30 @@
+{% for obj in chat %}
+    {% if obj.user == request.user %}
+    <li class="cont">
+        <img src="{{ obj.user.userprofileinfo.profilepic.url }}" alt="Avatar" class="right" style="width:100%;">
+        <p>{{ obj.user }} : {{ obj.message }}</p>
+        <span class="time-left">  {{ obj.created }}</span>
+    </li>
+
+
+    {% elif request.user.username == obj.fromm  %}
+        <li class="cont darker">
+            <img src="{{ obj.user.userprofileinfo.profilepic.url }}" alt="Avatar"  style="width:100%;">
+            <p>{{ obj.user }} : {{ obj.message }}</p>
+            <span class="time-right">{{ obj.created }}</span>
+        </li>
+        <!-- <li class="b text-left list-group-item">
+          <img src="{{ obj.user.userprofileinfo.profilepic.url }}" height="50%" width="50%" class="img-responsive" alt="Mountains">
+          {{ obj.user }} : {{ obj.message }}</br>
+          {{ obj.created }}
+         </li> -->
+    {% elif other == request.user.username  %}
+        <li class="b text-left list-group-item">
+          <img src="{{ obj.user.userprofileinfo.profilepic.url }}" height="50%" width="50%" class="img-responsive" alt="Mountains">
+          {{ obj.user }} : {{ obj.message }}</br>
+          {{ obj.created }}
+        </li>
+    {% endif %}
+{% empty %}
+    <li class="text-right list-group-item">No messages yet!</li>
+{% endfor %}

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+{% extends "firstapp/base.html" %}
+{% load static from staticfiles %}
+{% load embed_video_tags %}
+
+  {% block body_block %}
+  <ul class="breadcrumb">
+
+      <li><a href="{% url 'User:home' %}">{{ user }} Home</a></li>
+      <li class="active"><a href="">Auction</a></li>
+
+  </ul>
+
+
+  <div class="row recent-work margin-bottom-40">
+
+    <div class="owl-carousel owl-carousel{{ count }}">
+        {% for item in items %}
+            <div class="recent-work-item">
+              <em>
+                <img src="{{ item.item.item_pic.url }}" alt="Amazing Project" class="img-responsive">
+                <!-- <a href="{% url 'firstapp:login' %}"><i class="fa fa-link"></i></a> -->
+                <a href="{{ item.item.item_pic.url }}" class="fancybox-button" title="{{ item.item.item_name }}" data-rel="fancybox-button"><i class="fa fa-search"></i></a>
+              </em>
+              <a class="recent-work-description" href="javascript:;">
+                <strong>{{ item.item.item_name }}</strong>
+                <b>{{ item.item.item_location }}</b></br>
+                <b>Biders : {{ item.biders }}</b></br>
+                <b id="bidd">Total Bids : {{ item.bids }}</b>
+
+                <a id="btnbid" href="{% url 'User:bid' item.item.slug %}" class="button-signup" type="button" name="button">BID NOW!</a>
+
+              </a>
+            </div>
+
+        {% endfor %}
+
+
+
+    </div>
+
+
+</div>
+
+
+  {% endblock %}
