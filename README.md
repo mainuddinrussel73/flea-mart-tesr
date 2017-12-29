@@ -19,5 +19,8 @@ sudo pip install whitenoise
 
 # for extra 
 sudo pip install django[argon2]
+
 sudo pip instal FeedParser
+
+# for python 3.x use pip3 insteed of pip
 
