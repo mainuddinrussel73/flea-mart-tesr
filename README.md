@@ -17,4 +17,7 @@ sudo pip install django-pagination-bootstrap
 
 sudo pip install whitenoise
 
+# for extra 
+sudo pip install django[argon2]
+sudo pip instal FeedParser
 
