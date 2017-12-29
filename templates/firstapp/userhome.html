@@ -16,11 +16,20 @@
         <!-- BEGIN SIDEBAR & CONTENT -->
         <div class="row margin-bottom-40">
          <div class="sidebar col-md-3 col-sm-3">
-            <h1>All Items</h1>
+            <h1>{{ key }}</h1>
             <div class="content-page">
 
                 <div class="filter-v1">
                   <style media="screen">
+                    
+                    .btn:active{
+                        background:olive;
+                    }
+
+
+                    .btn:focus{
+                        background:#f44280;
+                    }
                   .vertical-menu {
                       width: 200px; /* Set a width if you like */
                       }
@@ -84,50 +93,56 @@
                             }
                   </style>
                   <script type="text/javascript">
-                      filterSelection("all") // Execute the function and show all columns
-                      function filterSelection(c) {
-                      var x, i;
-                      x = document.getElementsByClassName("column");
-                      if (c == "all") c = "";
-                      // Add the "show" class (display:block) to the filtered elements, and remove the "show" class from the elements that are not selected
-                      for (i = 0; i < x.length; i++) {
-                        w3RemoveClass(x[i], "show");
-                        if (x[i].className.indexOf(c) > -1) w3AddClass(x[i], "show");
+                     function changeValue(id, newText) {
+                          var el       = document.getElementById(id);
+                          el.value     = newText; 
                       }
-                      }
-
-                      // Show filtered elements
-                      function w3AddClass(element, name) {
-                      var i, arr1, arr2;
-                      arr1 = element.className.split(" ");
-                      arr2 = name.split(" ");
-                      for (i = 0; i < arr2.length; i++) {
-                        if (arr1.indexOf(arr2[i]) == -1) {
-                          element.className += " " + arr2[i];
-                        }
-                      }
-                      }
-
-                      // Hide elements that are not selected
-                      function w3RemoveClass(element, name) {
-                      var i, arr1, arr2;
-                      arr1 = element.className.split(" ");
-                      arr2 = name.split(" ");
-                      for (i = 0; i < arr2.length; i++) {
-                        while (arr1.indexOf(arr2[i]) > -1) {
-                          arr1.splice(arr1.indexOf(arr2[i]), 1);
-                        }
-                      }
-                      element.className = arr1.join(" ");
-                    }
                   </script>
 
                   <ul class="vertical-menu mix-filter">
-                    <li <input type="" onclick="filterSelection('all')" name="category" checked><a href="{% url 'User:home' %}"></a>Show all</li>
-                    {% for item in it %}
-                      <li <input type="" onclick="filterSelection('{{ item.item_type }}')" name="category" checked><a href="{% url 'User:home' %}"></a>{{ item.item_type }}</li>
+                    <form role="form" enctype="multipart/form-data" method="POST">
+                    {% csrf_token %}
+                    <!-- <button class="btn btn-primary" type="submit">Post a Comment</button> -->
+                    <div id="" class="form-group">
+                       <div class="sidebar col-md-12 col-sm-12">
 
-                    {% endfor %}
+                        <!-- <input placeholder="Bids ......." form="bid_form"  class="form-control" id="comm" rows="8" ></input> -->
+                         <div class="form-group">
+                            
+                            <button style="width: 150px; height: 50px;" class="btn btn-primary" type="submit" name="showall" value="all">Show all</button></br></br>
+                            {% for item in it %}
+                            <button href="{% url 'User:home' %}" style="width: 150px;  height: 50px;" class="btn btn-primary" type="submit" name="{{ item.item_type }}" value="{{ item.item_type }}">{{ item.item_type }}</button></br></br>
+                            
+                            {% endfor %}
+                            
+                           
+                            
+
+                          </div>
+                        </div>
+                      </div>
+                    <!-- <input id="slug" type="hidden" name="id" value="{{ item.slug }}"> -->
+                  </form>
+                  <form role="form" enctype="multipart/form-data" method="POST">
+                    {% csrf_token %}
+                    <!-- <button class="btn btn-primary" type="submit">Post a Comment</button> -->
+                    <div id="" class="form-group">
+                       <div class="sidebar col-md-12 col-sm-12">
+
+                        <!-- <input placeholder="Bids ......." form="bid_form"  class="form-control" id="comm" rows="8" ></input> -->
+                         <div class="form-group">
+                            <h4>Price(0 to 10000 TK/.)</h4>
+                            <input style="width: 200px;" class="bar" type="range" max="100000" id="rangeinput" value="50" onchange="rangevalue.value=value"/>
+                            <span class="highlight"></span>
+                            <output id="rangevalue">0</output><p>TK/.</p>
+                            <button id="gg" style="width: 150px; height: 50px;" onclick="changeValue(this.id,rangevalue.value);"  class="btn btn-success" type="submit" name="range"  >Filter</button>
+                          </div>
+                        </div>
+                      </div>
+                    <!-- <input id="slug" type="hidden" name="id" value="{{ item.slug }}"> -->
+                  </form>
+                  
+                    
 
                   </ul>
                 </div>
@@ -139,21 +154,17 @@
                     {% if item.uploader != user %}
                     <div class="col-md-6 col-sm-5 mix mix_all" style="display: block; opacity: 1; ">
                         <div class="column show {{ item.item_type }} mix-inner">
-                      <img src="{{ item.item_pic.url }}" class="img-responsive" alt="Mountains">
-                      <div class="mix-details">
-                      </br>
-                    </br></br>
-                  </br>
+                        <img src="{{ item.item_pic.url }}" class="img-responsive" alt="Mountains">
+                        <div class="mix-details">
+                          </br>
+                          </br></br>
+                          </br>
                          <h3>{{ item.item_name }}</h3>
                          <a class="mix-link" href="{{ item.get_absolute_url }}"><i class="fa fa-link"></i></a>
                          <a data-rel="fancybox-button" title="{{ item.item_location }}" href="{{ item.item_pic.url }}" class="mix-preview fancybox-button"><i class="fa fa-search"></i></a>
-
                       </div>
-
                       </div>
-
                     </div>
-
                     {% endif %}
                   {% endfor %}
                 </div>

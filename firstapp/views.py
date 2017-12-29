@@ -8,6 +8,8 @@ from django.http import HttpResponseRedirect,HttpResponse
 from django.contrib.auth import authenticate,login as auth_login,logout
 from User.models import SellItemInfo
 
+
+
 def error_404(request):
     return render(request,'firstapp/404.html')
 
@@ -18,7 +20,6 @@ def index(request):
     items = SellItemInfo.objects.all()
     args = {'items' : items}
     return render(request,'firstapp/index.html', args,)
-
 
 
 @login_required
@@ -47,6 +48,7 @@ def register(request):
 
             profile.save()
             registered = True
+            return redirect('/')
 
         else :
             print('Not possible')

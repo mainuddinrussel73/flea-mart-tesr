@@ -10,6 +10,8 @@ class UserProfileInfo(models.Model):
     coverpic = models.ImageField(upload_to='overpics',blank=True)
     address = models.TextField(blank=True)
 
+    def __str__(self):
+        return self.user.username
     def get_name(self):
         return self.user.username
     def get_some(self):

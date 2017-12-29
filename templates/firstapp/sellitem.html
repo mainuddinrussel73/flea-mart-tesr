@@ -83,6 +83,26 @@
                               $("#profile-img").change(function(){
                                   readURL(this);
                               });
+
+                              function getLocationConstant() {
+                                  if (navigator.geolocation) {
+                                      navigator.geolocation.getCurrentPosition(onGeoSuccess, onGeoError);
+                                  } else {
+                                      alert("Your browser or device doesn't support Geolocation");
+                                  }
+                              }
+
+                              // If we have a successful location update
+                              function onGeoSuccess(event) {
+                                  document.getElementById("Latitude").value = event.coords.latitude;
+                                  document.getElementById("Longitude").value = event.coords.longitude;
+
+                              }
+
+                              // If something has gone wrong with the geolocation request
+                              function onGeoError(event) {
+                                  alert("Error code " + event.code + ". " + event.message);
+                              }
                         </script>
                       </div>
                       <!-- {{ selliteminfo.as_p }} -->
@@ -148,10 +168,27 @@
                             </div>
                           </div>
                         </div>
-
+                        <div class="form-group">
+                          <label for="lastname" class="col-lg-4 control-label">Latitude</label>
+                          <div id="divSample" class="col-lg-8">
+                              
+                              {{ selliteminfo.item_lat|add_class:"form-control"|attr:"id:Latitude" }}
+                          </div>
+                          
+                        </div>
+                        <div class="form-group">
+                          <label for="lastname" class="col-lg-4 control-label">Longitude</label>
+                          <div id="divSample" class="col-lg-8">
+                              
+                               {{ selliteminfo.item_long|add_class:"form-control"|attr:"id:Longitude" }}
+                          </div>
+                         
+                        </div>
+                        
                       </fieldset>
                       <div class="row">
                         <div class="col-lg-8 col-md-offset-4 padding-left-0 padding-top-20">
+                           <input class="btn btn-primary" type="button" value="Get Location" onclick="getLocationConstant()" /> 
                           <button type="submit" class="btn btn-primary" value="Sellitem">Sell Item</button>
                           <button type="button" class="btn btn-default">Cancel</button>
                         </div>

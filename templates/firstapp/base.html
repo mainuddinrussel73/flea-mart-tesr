@@ -25,12 +25,18 @@
       <meta property="og:url" content="-CUSTOMER VALUE-">
 
       <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,300,600,700' rel='stylesheet' type='text/css'>
-
+      <!-- <script  src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/10.0.0/bootstrap-slider.js"></script> -->
     	<link rel="stylesheet" href="{% static "css/reset.css" %}"> <!-- CSS reset -->
     	<link rel="stylesheet" href="{% static "css/style.css" %}"> <!-- Resource style -->
     	<script src="{% static "js/modernizr.js" %}"></script> <!-- Modernizr -->
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
        <link rel="shortcut icon" href="{% static "images/favicon.ico" %}"/>
+
+
+
+      <link rel="stylesheet" type="text/css" href="{% static "css/jquery.countdown.css" %}">
+      <script type="text/javascript" src="{% static "js/jquery.plugin.js" %}"></script>
+      <script type="text/javascript" src="{% static "js/jquery.countdown.js"%}"></script>
 
       <!-- Fonts START -->
       <link href="http://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700|PT+Sans+Narrow|Source+Sans+Pro:200,300,400,600,700,900&amp;subset=all" rel="stylesheet" type="text/css">
@@ -140,8 +146,9 @@
              </li>
 
 
-            <li class="dropdown">
-              <a class="dropdown-toggle" data-toggle="dropdown" data-target="#" href="javascript:;">Locations</a>
+            <li >
+              <a href="{% url 'User:mapdetails' %}">Nearby Items</a>
+              <!-- <a class="dropdown-toggle" data-toggle="dropdown" data-target="#" href="javascript:;">Locations</a>
 
               <ul class="dropdown-menu">
                 <li class="dropdown-submenu">
@@ -163,7 +170,7 @@
                 <li class="dropdown-submenu">
                   <a href="index.html">Khulna <i class="fa fa-angle-right"></i></a>
                 </li>
-              </ul>
+              </ul> -->
             </li>
               <li><a href="{% url 'User:auctions' %}" >Auction</a></li>
 
@@ -177,8 +184,7 @@
               <ul class="dropdown-menu">
                 <li><a href="{% url 'User:profile' %}">View Profile</a></li>
                 <li><a href="{% url 'User:sellitem' %}">Sell Item</a></li>
-                <li><a href="page-faq.html">Purchase History</a></li>
-                <li><a href="page-gallery.html">Chat History</a></li>
+                <li><a href="{% url 'User:history' %}">Sell History</a></li>
               </ul>
             </li>
 

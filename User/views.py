@@ -6,8 +6,8 @@ from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect,HttpResponse,JsonResponse
 from django.contrib.auth import authenticate,login as auth_login,logout
-from User.forms import SellItemInfoForm,CommentsForm
-from User.models import SellItemInfo,Chat,Notification,Comments,ServerInfo,Auctions
+from User.forms import SellItemInfoForm,CommentsForm,AuctionsForm
+from User.models import SellItemInfo,Chat,Notification,Comments,ServerInfo,Auctions,purchaseInfo
 from django.core import serializers
 from django.forms.models import model_to_dict
 from itertools import chain,cycle
@@ -22,7 +22,11 @@ from django.contrib.contenttypes.models import ContentType
 from django.db.models import F
 from django.db.models import Q
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-
+from datetime import date, datetime
+import json
+import decimal
+import ast
+import locale
 # from django.core import serializers
 # json_serializer = serializers.get_serializer("json")()
 # companies = json_serializer.serialize(Notification.objects.all().order_by('id')[:5], ensure_ascii=False)
@@ -35,30 +39,70 @@ iteuploader = None
 slugg_ = None
 
 
+def json_serial(obj):
+    """JSON serializer for objects not serializable by default json code"""
+
+    if isinstance(obj, (datetime, date)):
+        return obj.isoformat()
+    raise TypeError ("Type %s not serializable" % type(obj))
+
+def json_encode_decimal(obj):
+    if isinstance(obj, decimal.Decimal):
+        return str(obj)
+    raise TypeError(repr(obj) + " is not JSON serializable")
+
+@login_required
+def Mapdetailupdate(request):
+    items = SellItemInfo.objects.all().exclude(uploader=request.user)
+    hhh = list(items.values('uploader','item_name','item_lat','item_long','item_location','slug'))
+    return HttpResponse(json.dumps(hhh,default=json_encode_decimal))
+
+@login_required
+def Mapdetails(request):
+    return render(request,'firstapp/locations.html',{},)
+
 @login_required
 def bid(request,slug=None):
-    item = SellItemInfo.objects.get(slug=slug);
-    return render(request, 'firstapp/auction_details.html', { "item" : item })
-
-
-
-@login_required
-def bids(request):
+    form = AuctionsForm(request.POST or None)
     if request.method == 'POST':
-        co = request.POST['co']
-        slug = request.POST['slug']
-
-        print(co)
-        it = SellItemInfo.objects.get(slug=slug);
-        print(it)
-        itt  = Auctions.objects.filter(item=it).update(bids=F('bids')+1,biders=request.user.username)
-        i  = Auctions.objects.get(item=it)
-        co = i.bids
-
-
-        return JsonResponse({ "bid" : co })
+        form = AuctionsForm(data=request.POST)
+        bids = request.POST.get('bids', None)
+        print(bids)
+        ii = SellItemInfo.objects.get(slug=slug)
+        auctions_pre = Auctions.objects.filter(item=ii)
+        ggg = list(auctions_pre.values('bids'))
+        s = ggg[0].get('bids')
+        if(s<int(bids)):
+            auctions = Auctions.objects.filter(item=ii).update(bids = bids,biders=request.user.username)
+        return HttpResponseRedirect(reverse('User:auctions'))
     else:
-        return HttpResponse('Request must be POST.')
+        item = SellItemInfo.objects.get(slug=slug);
+        auct = Auctions.objects.filter(item=item);
+        ggg = list(auct.values('duration'))
+        return render(request, 'firstapp/auction_details.html', { "AuctionsForm":form,"item" : item ,"auct":json.dumps(ggg,default=json_serial)})
+
+
+
+# @login_required
+# def bids(request):
+#     if request.method == 'POST':
+#         selliteminfo = SellItemInfoForm(data=request.POST)
+#         co = request.POST['co']
+#         slug = request.POST['slug']
+
+#         print(co)
+#         it = SellItemInfo.objects.get(slug=slug);
+#         print(it)
+#         itt  = Auctions.objects.filter(item=it).update(bids=F('bids')+1,biders=request.user.username)
+#         i  = Auctions.objects.get(item=it)
+#         co = i.bids
+
+
+#         return JsonResponse({ "bid" : co })
+#     else:
+#         AuctionsForm = AuctionsForm()
+
+#         return HttpResponse('Request must be POST.')
 
 
 @login_required
@@ -66,7 +110,9 @@ def check(request):
 
     if request.method == "POST":
         status = request.POST.get('status', None)
+        dateTime = request.POST.get('time', None)
         slug =   request.POST.get('slug', None)
+        print(dateTime)
         print(status)
         print(slug)
         it = SellItemInfo.objects.filter(slug=slug).update(isAuction=True)
@@ -75,7 +121,7 @@ def check(request):
         o =  Auctions.objects.filter(item=itr)
         print(o)
         if o.count()==0:
-            obj = Auctions(uploader=request.user,item=itr,bids=0,biders=request.user.username,isAuction=True)
+            obj = Auctions(uploader=request.user,item=itr,bids=0,biders=request.user.username,isAuction=True,duration=dateTime)
             obj.save()
         # ggg = list(obj.values('isAuction'))
         # print(ggg)
@@ -85,11 +131,23 @@ def check(request):
 def auctions(request):
     obj = Auctions.objects.filter(isAuction=True).exclude(uploader=request.user)
     print(obj)
+    print(obj.count())
     args = {
         "items" : obj,
         "count" : obj.count()
     }
     return render(request, 'firstapp/auction.html', args,)
+
+@login_required
+def Deleteauction(request):
+    if request.method == "POST":
+        slug = request.POST.get('slug', None)
+        itr = SellItemInfo.objects.get(slug=slug)
+        obj = Auctions.objects.filter(item=itr).exclude(uploader=request.user)
+        if(obj.count()>0):
+            obj.delete()
+        return HttpResponseRedirect(reverse('User:auctions'))
+
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -127,18 +185,35 @@ class PostLikeAPIToggle(APIView):
         }
         return Response(data)
 
+@login_required
+def Purchasehistory(request):
+    p = purchaseInfo.objects.filter(user=request.user).order_by("-timestemp")
+    args = {
+        "p" : p
+    }
+    return render(request, 'firstapp/purchasehistory.html', args,)
+
 
 @login_required
-def deleteitem(request,slug=None):
-    obj = SellItemInfo.objects.filter(slug=slug)
-    if(obj.count()>0):
-        obj.delete()
+def deleteitem(request):
+    if request.method == "POST":
+        name = request.POST.get('name', None)
+        price = request.POST.get('price', None)
+        slug = request.POST.get('slug', None)
+        obj = SellItemInfo.objects.filter(slug=slug)
+        obb = SellItemInfo.objects.get(slug=slug)
+    
+        p = purchaseInfo(user=request.user,itemname=slug,item_pic=obb.item_pic,buyer=name,price=price)
+        p.save()
+        if(obj.count()>0):
 
-    obj1 = SellItemInfo.objects.filter(uploader=request.user)
-    args = {
-        "items" : obj1
-    }
-    return render(request, 'firstapp/profile.html', args,)
+            obj.delete()
+
+        obj1 = SellItemInfo.objects.filter(uploader=request.user)
+        args = {
+            "items" : obj1
+        }
+        return render(request, 'firstapp/profile.html', args,)
 
 @login_required
 def Post(request):
@@ -237,25 +312,52 @@ def combine(list1, list2):
 
 
 
-@login_required
-def userhome(request,username='main'):
+def allitems(request,type=None):
+    print(type)
+    it = SellItemInfo.objects.values('item_type').distinct()
+    items_list = SellItemInfo.objects.all().order_by("-timestemp")
+    items_list = items_list.filter(
+                Q(slug__icontains=type) |
+                Q(item_name__icontains=type) |
+                Q(item_location__icontains=type)|
+                Q(item_type__icontains=type)
+                ).distinct()
+    paginator = Paginator(items_list,6)
+    page_request_var = 'page'
+
+    page = request.GET.get(page_request_var)
+    try :
+        items = paginator.page(page)
+    except PageNotAnInteger:
+        items = paginator.page(1)
+    except:
+        items = paginator.page(paginator.num_pages)
+    args = {'items' : items,"page_request_var" : page_request_var,"it":it }
+    return render(request,'firstapp/itemwithoulogin.html',args)
+
+
+def Filter(request,keywrd):
     u = User.objects.get(username=request.user.username)
     counter = Notification.objects.exclude(user=request.user)
 
 
-
-    items_list = SellItemInfo.objects.all().order_by("-timestemp")
+    if keywrd != 'showall':
+        items_list = SellItemInfo.objects.filter(item_type=keywrd).order_by("-timestemp")
+    else:
+        keywrd = 'All'
+        items_list = SellItemInfo.objects.all().order_by("-timestemp")
+    
     it = SellItemInfo.objects.values('item_type').distinct()
     queary = request.GET.get("q")
     if queary :
         items_list = items_list.filter(
-                Q(slug__icontains=queary) |
-                Q(item_name__icontains=queary) |
-                Q(item_location__icontains=queary)|
-                Q(item_type__icontains=queary)
-                ).distinct()
+            Q(slug__icontains=queary) |
+            Q(item_name__icontains=queary) |
+            Q(item_location__icontains=queary)|
+            Q(item_type__icontains=queary)
+        ).distinct()
 
-    paginator = Paginator(items_list,5)
+    paginator = Paginator(items_list,6)
     page_request_var = 'page'
 
     page = request.GET.get(page_request_var)
@@ -267,11 +369,96 @@ def userhome(request,username='main'):
         items = paginator.page(paginator.num_pages)
 
     print(items_list)
-    args = {'items' : items,'counter' : counter ,"c" : counter.count(),"page_request_var" : page_request_var,"it":it }
-    return render(request,'firstapp/userhome.html',args)
+    args = {'items' : items,'counter' : counter ,"c" : counter.count(),"page_request_var" : page_request_var,"it":it ,"key":keywrd}
+    return args
 
 @login_required
-def userprofile(request,username='main',pk=None):
+def userhome(request,username=None):
+    if 'showall' in request.POST :
+        args = Filter(request,'showall')
+        return render(request,'firstapp/userhome.html',args)
+    elif 'phone' in request.POST:
+        args = Filter(request,'phone')
+        return render(request,'firstapp/userhome.html',args)
+    elif 'guiter' in request.POST:
+        args = Filter(request,'guiter')
+        return render(request,'firstapp/userhome.html',args)
+    elif 'laptop' in request.POST:
+        args = Filter(request,'laptop')
+        return render(request,'firstapp/userhome.html',args)
+    elif 'tablet' in request.POST:
+        args = Filter(request,'tablet')
+        return render(request,'firstapp/userhome.html',args)
+    elif 'camera' in request.POST:
+        args = Filter(request,'camera')
+        return render(request,'firstapp/userhome.html',args)
+    elif 'console'in request.POST:
+        args = Filter(request,'console')
+        return render(request,'firstapp/userhome.html',args)
+    elif 'range' in request.POST:
+        print(request.POST['range'])
+        a = request.POST['range']
+        u = User.objects.get(username=request.user.username)
+        counter = Notification.objects.exclude(user=request.user)
+        items_list = SellItemInfo.objects.filter(item_exprice__lte=a).order_by("-timestemp")
+        it = SellItemInfo.objects.values('item_type').distinct()
+        queary = request.GET.get("q")
+        if queary :
+            items_list = items_list.filter(
+                    Q(slug__icontains=queary) |
+                    Q(item_name__icontains=queary) |
+                    Q(item_location__icontains=queary)|
+                    Q(item_type__icontains=queary)
+                    ).distinct()
+
+        paginator = Paginator(items_list,6)
+        page_request_var = 'page'
+
+        page = request.GET.get(page_request_var)
+        try :
+            items = paginator.page(page)
+        except PageNotAnInteger:
+            items = paginator.page(1)
+        except:
+            items = paginator.page(paginator.num_pages)
+
+        print(items_list)
+        args = {'items' : items,'counter' : counter ,"c" : counter.count(),"page_request_var" : page_request_var,"it":it,"key":"All" }
+        return render(request,'firstapp/userhome.html',args)
+    else:
+        u = User.objects.get(username=request.user.username)
+        counter = Notification.objects.exclude(user=request.user)
+
+
+
+        items_list = SellItemInfo.objects.all().order_by("-timestemp")
+        it = SellItemInfo.objects.values('item_type').distinct()
+        queary = request.GET.get("q")
+        if queary :
+            items_list = items_list.filter(
+                    Q(slug__icontains=queary) |
+                    Q(item_name__icontains=queary) |
+                    Q(item_location__icontains=queary)|
+                    Q(item_type__icontains=queary)
+                    ).distinct()
+
+        paginator = Paginator(items_list,6)
+        page_request_var = 'page'
+
+        page = request.GET.get(page_request_var)
+        try :
+            items = paginator.page(page)
+        except PageNotAnInteger:
+            items = paginator.page(1)
+        except:
+            items = paginator.page(paginator.num_pages)
+
+        print(items_list)
+        args = {'items' : items,'counter' : counter ,"c" : counter.count(),"page_request_var" : page_request_var,"it":it,"key":"All" }
+        return render(request,'firstapp/userhome.html',args)
+
+@login_required
+def userprofile(request,username=None,pk=None):
     i = ServerInfo.objects.all()
     # print(list(i.values('videos')))
     if pk:

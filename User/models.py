@@ -7,7 +7,8 @@ from django.core.urlresolvers import reverse
 from django.db.models.signals import pre_save
 from django.utils.text import slugify
 import string
-
+from datetime import timedelta
+from decimal import Decimal
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 
@@ -69,7 +70,9 @@ class SellItemInfo(models.Model): #never make the model and forms name same it w
     item_name = models.CharField(max_length=25,blank=False)
     item_type = models.CharField(max_length=6, choices=ITEM_CHOICES, default='phone')
     item_location = models.TextField(blank=False)
-    item_exprice = models.CharField(max_length=50,blank=False)
+    item_lat = models.DecimalField(max_digits=20,decimal_places=4,default=Decimal('0.0000'))
+    item_long = models.DecimalField(max_digits=20,decimal_places=4,default=Decimal('0.0000'))
+    item_exprice = models.IntegerField()
     item_usetime = models.CharField(max_length=15,blank=False)
     item_reason = models.TextField(blank=False)
     item_pic = models.ImageField(upload_to='useritems',blank=True)
@@ -135,6 +138,7 @@ class Auctions(models.Model):
     bids = models.IntegerField()
     biders = models.CharField(max_length=20,blank=True)
     isAuction = models.BooleanField(default=False)
+    duration = models.DateTimeField(auto_now_add=False)
 
     def get_slug(self):
         return self.item.slug
@@ -142,3 +146,14 @@ class Auctions(models.Model):
         return str(self.user.username)
     def __str__(self):
         return self.item.uploader.username
+    def __getBids__(self):
+        return self.item.bids
+
+
+class purchaseInfo(models.Model):
+    user = models.ForeignKey(User)
+    buyer = models.CharField(max_length=20,blank=False)
+    itemname = models.CharField(max_length=50,blank=False)
+    item_pic = models.ImageField(upload_to='history',blank=True)
+    price  = models.CharField(max_length=50,blank=False)
+    timestemp = models.DateTimeField(auto_now_add=True)

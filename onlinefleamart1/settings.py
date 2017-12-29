@@ -25,9 +25,9 @@ MEDIA_DIR = os.path.join(BASE_DIR,'media')
 SECRET_KEY = 'b0bqz=a@hqtl=8i%jyh3jl7k+_(s1k^)h9mpq2e9p4h_ozmf-j'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
-ALLOWED_HOSTS = ['onlinefleamartbd.herokuapp.com']
+ALLOWED_HOSTS = []
 
 
 # Application definition
@@ -92,12 +92,8 @@ WSGI_APPLICATION = 'onlinefleamart1.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'd3ighei4b7to6o',
-        'USER': 'qrfmitwpiohpdo',
-        'PASSWORD': '99787615c8c276055b08271d8eb14c116c95df4bb6db8c0366970cce87748dff',
-        'HOST': 'ec2-54-235-210-115.compute-1.amazonaws.com',
-        'PORT': '5432',
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
 
@@ -145,13 +141,12 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
-# STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-STATIC_ROOT = os.path.join((BASE_DIR),'static')
+
 STATIC_URL = '/static/'
-# STATICFILES_DIRS = [
-#     STATIC_DIR,
-#
-# ]
+STATICFILES_DIRS = [
+    STATIC_DIR,
+
+]
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'

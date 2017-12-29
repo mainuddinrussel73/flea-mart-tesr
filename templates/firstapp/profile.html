@@ -3,6 +3,9 @@
 {% load static from staticfiles %}
 {% load embed_video_tags %}
 
+  {% block title_block %}
+        <title>{{ user }} Home | Profile</title>
+  {% endblock %}
   {% block body_block %}
 
         <ul class="breadcrumb">
@@ -311,6 +314,17 @@ position:fixed;
 background-color:#313131;
 overflow:auto
 }
+#c {
+width:100%;
+height:100%;
+opacity:.95;
+top:0;
+left:0;
+display:none;
+position:fixed;
+background-color:#313131;
+overflow:auto
+}
 img#close {
 position:absolute;
 right:-14px;
@@ -335,6 +349,16 @@ font-family:raleway;
 background-color:#fff
 }
 
+#final_form{
+
+max-width:300px;
+min-width:250px;
+padding:10px 50px;
+border:2px solid gray;
+border-radius:10px;
+font-family:raleway;
+background-color:#fff
+}
 
 
 /*#submit {
@@ -423,22 +447,34 @@ document.getElementById('slug').value = c;
 if($("#senderr").prop('checked') == true){
   $('#senderr').attr('checked', false);
 }
+}
+function div_sho(c) {
+document.getElementById('c').style.display = "block";
+document.getElementById('s').value = c;
+
 
 }
 //Function to Hide Popup
 function div_hide(){
 document.getElementById('abc').style.display = "none";
 }
+function div_hid(){
+document.getElementById('c').style.display = "none";
+}
   $(document).ready(function() {
       $('#senderr').click(function() {
-
-      console.log('Posting the following: ');
-      // alert("asdfa");
-
+        
+        var today = new Date();
+        var date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+        var time = (today.getHours()) + ":" + today.getMinutes() + ":" + today.getSeconds();
+        var dateTime = date+' '+time;
+        console.log('Posting the following: ');
+      // alert("asdfa");ś
       $.ajax({
         url: "{% url 'User:check' %}",
         data: {
           status : $('#senderr').val(),
+          time   :  dateTime,
           slug   : $('#slug').val(),
           csrfmiddlewaretoken : $('input[name=csrfmiddlewaretoken]').val()
         },
@@ -453,6 +489,29 @@ document.getElementById('abc').style.display = "none";
         }
       });
     });
+    $('#snd').click(function() {
+
+      alert("asdfa");
+
+    $.ajax({
+      url: "{% url 'User:deleteitem' %}",
+      data: {
+        name : $('#name').val(),
+        price : $('#price').val(),
+        slug   : $('#s').val(),
+        csrfmiddlewaretoken : $('input[name=csrfmiddlewaretoken]').val()
+      },
+      type: 'post',
+      success: function(obj) {
+
+          // alert(obj);
+          row = $('#' + obj).hide();
+
+          // Checks it
+
+      }
+    });
+  });
   });
   </script>
   <div class="col-md-6 col-sm-6">
@@ -464,10 +523,10 @@ document.getElementById('abc').style.display = "none";
                 <div class="col-md-6 col-sm-8 mix category_1 mix_all" style="display: block; opacity: 1; ">
                   <div class="mix-inner">
                     <img alt="" src="{{ item.item_pic.url }}" class="img-responsive">
-
+<!-- href="{{ item.get_delete_url }}" -->
                     <div class="mix-details">
                        <h4>{{ item.item_name }}</h4>
-                       <a class="mix-link" href="{{ item.get_delete_url }}"><i class="class="fa fa-link"">Sold?</i></a>
+                       <a onclick="div_sho('{{ item.slug }}')" class="mix-link"><i class="class="fa fa-link"">Sold?</i></a>
                        <!-- <a class="mix-link" href="{{ item.get_absolute_url }}"><i class="class="fa fa-link"">Sold?</i></a> -->
                        <a title="{{ item.item_location }}" href="{{ item.get_absolute_url }}" class="mix-preview fancybox-button">Chat</a>
                     </div>
@@ -497,6 +556,24 @@ document.getElementById('abc').style.display = "none";
             </div>
             <!-- Popup Div Ends Here -->
             </div>
+            <div id="c">
+
+              <div id="popupContact">
+
+              <form action="" id="final_form" method="post" name="form">
+                {% csrf_token %}
+                <label for="">Please fill the form before anythig..</label><hr>
+                <img id="close" src="{% static "assets/pages/img/works/close.png" %}" onclick ="div_hid()">
+                <input id="s" type="hidden" name="slug" value="">
+                <strong>Customer's name</strong></br></br>
+                <input id="name" type="text" name="" value="" placeholder="Customer's name"style="height:30px"></br></br>
+                <strong>Price</strong></br></br>
+                <input id="price" type="text" name="" value="" placeholder="Price" style="height:30px;margin-bottom:15px">
+                <button class="button button-signup" type="submit" id="snd" name="button">Submit</button>
+              </form>
+              </div>
+              <!-- Popup Div Ends Here -->
+              </div>
       </div>
   </div>
 

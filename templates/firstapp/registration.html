@@ -2,7 +2,9 @@
 {% extends "firstapp/base3.html" %}
 {% load widget_tweaks %}
 {% load staticfiles %}
-
+  {% block title_block %}
+      <title>Flea-mart | Registration</title>
+  {% endblock %}
   {% block body_block %}
   <ul class="breadcrumb">
         <li><a href="{% url 'index' %}">Home</a></li>
@@ -18,6 +20,8 @@
         </ul>
       </div>
         <h1>Thank you for registering!</h1>
+        
+
       {% else %}
 
         <!-- BEGIN SIDEBAR & CONTENT -->
@@ -153,9 +157,9 @@
                 <div class="col-md-4 col-sm-4 pull-right">
                   <div class="form-info">
                     <h2><em>Important</em> Information</h2>
-                    <p>Lorem ipsum dolor ut sit ame dolore  adipiscing elit, sed sit nonumy nibh sed euismod ut laoreet dolore magna aliquarm erat sit volutpat. Nostrud exerci tation ullamcorper suscipit lobortis nisl aliquip  commodo quat.</p>
+                    <p>Please valid user info otherwise you can't aommunicate us well</p>
 
-                    <p>Duis autem vel eum iriure at dolor vulputate velit esse vel molestie at dolore.</p>
+                    <p>Thanks!!!</p>
 
                     <button type="button" class="btn btn-default">More details</button>
                   </div>
