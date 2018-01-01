@@ -45,6 +45,8 @@ class Notification(models.Model):
 
     def __str__(self):
         return str(self.count)
+    def get_to(self):
+        return str(self.to)
     def __unicode__(self):
         return self.to
     def natural_key(self):

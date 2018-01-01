@@ -2,6 +2,9 @@
 {% extends "firstapp/base4.html" %}
 {% load static from staticfiles %}
 {% load widget_tweaks %}
+{% block title_block %}
+  <title>{{ user }} Home | Details</title>
+{% endblock %}
   {% block body_block %}
 
   <ul class="breadcrumb">
@@ -259,7 +262,7 @@ $(document).on('submit','#comm_form',function(e){
         $.ajax({
             url  : "{% url 'User:post'  %}",
             type : 'POST',
-            data : { msgbox : $('#chat-msg').val() , hide : $('#hide').val() ,itemname : $('#itemname').val(),iteuploader : $('#iteuploader').val() },
+            data : { msgbox : $('#chat-msg').val() , hide : $('#hide').val() ,itemname : $('#itemname').val(),iteuploader : $('#iteuploader').val() ,docc : $('#docc').val()},
 
             success : function(json){
                 $('#chat-msg').val('');
@@ -535,7 +538,7 @@ $(document).on('submit','#comm_form',function(e){
 
         #kont .footer {
             margin-top: 250px;
-            background : #899b8d;
+            background :#560043;
             width:300px;
             height :40px;
         /*position:absolute;
@@ -638,6 +641,7 @@ $(document).on('submit','#comm_form',function(e){
         overflow-x : hidden;
         }
 </style>
+
 <div class="row margin-bottom-30">
 
   <div class="col-md-5 front-carousel">
@@ -704,13 +708,20 @@ $(document).on('submit','#comm_form',function(e){
 
   </div>
   <div  class="col-md-3">
+
+
+
+
+    <p id="demo"></p>
     <div id="kont">
+
       <div style="position:absolute;top:2px;left :2px" class="back"></div>
 
       <div id="name">
           <label for="firstname">{{ instance.uploader }}</label>
       </div>
       <div class="img">
+
             <!-- <img src="{{ instance.uploader.userprofileinfo.profilepic.url }}" height="50%" width="50%" class="img-responsive" alt="Mountains"> -->
       </div>
       <div class="bar">
@@ -720,45 +731,64 @@ $(document).on('submit','#comm_form',function(e){
 
 
 
+      <style media="screen">
 
+
+          .sidenav {
+            position: relative;
+            z-index: 1;
+            top: 0;
+            left: 0;
+            background-color: #560043;
+            overflow-x: hidden;
+          }
+
+          .sidenav li {
+            margin-left : 30px;
+            padding: 6px 18px 6px 16px;
+            text-decoration: none;
+            font-size: 15px;
+            color: #818181;
+            display: block;
+          }
+
+          .sidenav li:hover {
+            color: #f1f1f1;
+          }
+
+
+
+      </style>
 
       <div id="msg-list-div">
 
               <ul id="msg-list">
                 {% for obj in chat %}
-                    {% if obj.user == request.user %}
-                    <li class="cont">
-                        <img src="{{ obj.user.userprofileinfo.profilepic.url }}" alt="Avatar" style="width:100%;">
-                        <p>{{ obj.user }} : {{ obj.message }}</p>
-                        <span class="time-right">  {{ obj.created }}</span>
-                    </li>
-
-                        <!-- <li class="a text-right list-group-item">
-                          <img src="{{ obj.user.userprofileinfo.profilepic.url }}" height="50%" width="50%" class="img-responsive" alt="Mountains">
-                          {{ obj.user }} : {{ obj.message }}</br>
-                          {{ obj.created }}
-                        </li> -->
-                    {% elif request.user.username == obj.fromm  %}
-                    <li class="cont darker">
-                        <img src="{{ obj.user.userprofileinfo.profilepic.url }}" alt="Avatar" class="right" style="width:100%;">
-                        <p>{{ obj.user }} : {{ obj.message }}</p>
-                        <span class="time-left">{{ obj.created }}</span>
-                    </li>
-                    {% elif instance.uploader == request.user.username  %}
-                        <li class="b text-left list-group-item">
-                          <img src="{{ obj.user.userprofileinfo.profilepic.url }}" height="50%" width="50%" class="img-responsive" alt="Mountains">
-                          {{ obj.user }} : {{ obj.message }}</br>
-                          {{ obj.created }}
+                    {% if instance.uploader == request.user.username  %}
+                        {% if request.user.username == obj.to %}
+                            <li class="b text-left list-group-item">
+                              <img src="{{ obj.user.userprofileinfo.profilepic.url }}" height="50%" width="50%" class="img-responsive" alt="Mountains">
+                              {{ obj.user }} : {{ obj.message }}</br>
+                              {{ obj.created }}
+                            </li>
+                        {% elif request.user.username == obj.fromm %}
+                            <li class="cont darker">
+                                <img src="{{ obj.user.userprofileinfo.profilepic.url }}" alt="Avatar" class="right" style="width:100%;">
+                                <p>{{ obj.user }} : {{ obj.message }}</p>
+                                <span class="time-left">{{ obj.created }}</span>
+                            </li>
+                        {% endif %}
+                    {% elif instance.uploader != request.user.username %}
+                        <li class="cont">
+                            <img src="{{ obj.user.userprofileinfo.profilepic.url }}" alt="Avatar" style="width:100%;">
+                            <p>{{ obj.user }} : {{ obj.message }}</p>
+                            <span class="time-right">  {{ obj.created }}</span>
                         </li>
                     {% endif %}
-                {% empty %}
-                    <li class="text-right list-group-item">No messages yet!</li>
+                    {% empty %}
+                        <li class="text-right list-group-item">No messages yet!</li>
                 {% endfor %}
 
-                  <!-- <script>
-                      var chatlist = document.getElementById('msg-list-div');
-                      chatlist.scrollTop = chatlist.scrollHeight;
-                  </script> -->
               </ul>
 
 
@@ -774,14 +804,134 @@ $(document).on('submit','#comm_form',function(e){
                   <input placeholder="Type Here......" type="text" id="chat-msg" name="chat-msg" class="textarea form-control"/>
 
                   <span class="input-group-btn">
-                      <input class="btn btn-default" id="send" type="submit" value="Send"/>
+                      <input onclick="unction()" class="btn btn-default" id="send" type="submit" value="Send"/>
                   </span>
                   <input id="hide" type="hidden" name="id" value="{{ instance.uploader }}">
-
+                  <input id="docc" type="hidden" name="id3" value="{{ instance.uploader }}">
                   <input id="itemname" type="hidden" name="id1" value="{{ instance.item_name }}">
                   <input id="iteuploader" type="hidden" name="id2" value="{{ instance.uploader }}">
+
+                  <!-- <input type="text" name="" value="a"> -->
             </div>
+
         </form>
+
+
+      </div>
+
+      <script>
+
+      function handle(e){
+          address=document.getElementById("myInput").value;
+            if(e.keyCode === 13){
+            //write your specific code from here
+              alert("You are searching: " + address);
+            }
+          return false;
+          }
+          function myFunction() {
+              // Declare variables
+              var input, filter, ul, li, a, i;
+              input = document.getElementById('myInput');
+              filter = input.value.toUpperCase();
+              ul = document.getElementById("myUL");
+              li = ul.getElementsByTagName('li');
+
+              // Loop through all list items, and hide those who don't match the search query
+              for (i = 0; i < li.length; i++) {
+                  a = li[i].getElementsByTagName("a")[0];
+                  if (a.innerHTML.toUpperCase().indexOf(filter) > -1) {
+                      li[i].style.display = "";
+                  } else {
+                      li[i].style.display = "none";
+                  }
+              }
+          }
+
+      </script>
+      <script type="text/javascript">
+
+        function unction() {
+
+
+            document.getElementById("docc").value = document.getElementById("autocomplete").value ;
+            console.log(document.getElementById("autocomplete").value );
+
+        }
+        $( window ).on( "load", function() {
+
+               if("{{ user.username }}"=="{{ instance.uploader }}"){
+                    var myClock = document.getElementById('namess');
+                    myClock.style.display = 'display';
+               }
+               else {
+                 var myClock = document.getElementById('namess');
+                 myClock.style.display = 'none';
+                }
+      });
+      </script>
+      <style media="screen">
+          input[type="text"] {
+          background-color: transparent;
+          font-family:sans-serif;
+          font-size:20px;
+          outline:none;
+          border:0;
+          border-bottom:2px solid #aaa;
+          -o-transition:box-shadow .5s ease;
+          -moz-transition:box-shadow .5s ease;
+          -webkit-transition:box-shadow .5s ease;
+          -ms-transition:box-shadow .5s ease;
+          transition:box-shadow .5s ease;
+          box-shadow:0 0 0 0 #ddd inset;
+          box-sizing:border-box;
+          padding:5px;
+          }
+
+          input[type="text"]:focus{
+          box-shadow:0 0 0 20px #eee inset;
+          }
+
+          ::-webkit-input-placeholder {
+          color: #aaa;
+          opacity:1;
+          font-weight:100;
+          font-family:sans-serif;
+          }
+
+          :-moz-placeholder {
+          color: #aaa;
+          opacity:1;
+          font-weight:100;
+          font-family:sans-serif;
+          }
+
+          ::-moz-placeholder {
+          color: #aaa;
+          opacity:1;
+          font-weight:100;
+          font-family:sans-serif;
+          }
+
+          :-ms-input-placeholder {
+          color: #aaa;
+          opacity:1;
+          font-weight:100;
+          font-family:sans-serif;
+          }
+
+
+      </style>
+      <div id="namess" class="sidenav">
+          <input style="margin-left:20px;" type="text" id="autocomplete" title="type &quot;a&quot;" placeholder="selelect user">
+        <!-- {% for u in use %}
+      </hr></hr></hr>
+
+
+          <li><input  id="myBtn" onclick="unction('{{ u }}')" class="btn btn-primary" type="button" value="{{ u }}"></li>
+
+        {% endfor %} -->
+
 
       </div>
     </div>

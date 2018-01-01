@@ -16,3 +16,5 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "onlinefleamart1.settings")
 
 application = get_wsgi_application()
 application = DjangoWhiteNoise(application)
+
+

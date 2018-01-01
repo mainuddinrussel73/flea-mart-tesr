@@ -11,7 +11,10 @@ from User.models import SellItemInfo,Chat,Notification,Comments,ServerInfo,Aucti
 from django.core import serializers
 from django.forms.models import model_to_dict
 from itertools import chain,cycle
-from itertools import zip_longest
+try:
+    from itertools import zip_longest as zip_longest
+except:
+    from itertools import izip_longest as zip_longest
 import re
 from collections import Counter
 import string
@@ -27,6 +30,8 @@ import json
 import decimal
 import ast
 import locale
+from django.core.serializers.json import DjangoJSONEncoder
+from django.db.models import Q
 # from django.core import serializers
 # json_serializer = serializers.get_serializer("json")()
 # companies = json_serializer.serialize(Notification.objects.all().order_by('id')[:5], ensure_ascii=False)
@@ -37,6 +42,7 @@ other = None
 nam = ""
 iteuploader = None
 slugg_ = None
+teruser = None
 
 
 def json_serial(obj):
@@ -67,7 +73,7 @@ def bid(request,slug=None):
     if request.method == 'POST':
         form = AuctionsForm(data=request.POST)
         bids = request.POST.get('bids', None)
-        print(bids)
+        # print(bids)
         ii = SellItemInfo.objects.get(slug=slug)
         auctions_pre = Auctions.objects.filter(item=ii)
         ggg = list(auctions_pre.values('bids'))
@@ -83,28 +89,6 @@ def bid(request,slug=None):
 
 
 
-# @login_required
-# def bids(request):
-#     if request.method == 'POST':
-#         selliteminfo = SellItemInfoForm(data=request.POST)
-#         co = request.POST['co']
-#         slug = request.POST['slug']
-
-#         print(co)
-#         it = SellItemInfo.objects.get(slug=slug);
-#         print(it)
-#         itt  = Auctions.objects.filter(item=it).update(bids=F('bids')+1,biders=request.user.username)
-#         i  = Auctions.objects.get(item=it)
-#         co = i.bids
-
-
-#         return JsonResponse({ "bid" : co })
-#     else:
-#         AuctionsForm = AuctionsForm()
-
-#         return HttpResponse('Request must be POST.')
-
-
 @login_required
 def check(request):
 
@@ -112,14 +96,14 @@ def check(request):
         status = request.POST.get('status', None)
         dateTime = request.POST.get('time', None)
         slug =   request.POST.get('slug', None)
-        print(dateTime)
-        print(status)
-        print(slug)
+        # print(dateTime)
+        # print(status)
+        # print(slug)
         it = SellItemInfo.objects.filter(slug=slug).update(isAuction=True)
         itr = SellItemInfo.objects.get(slug=slug)
-        print(itr)
+        # print(itr)
         o =  Auctions.objects.filter(item=itr)
-        print(o)
+        # print(o)
         if o.count()==0:
             obj = Auctions(uploader=request.user,item=itr,bids=0,biders=request.user.username,isAuction=True,duration=dateTime)
             obj.save()
@@ -130,8 +114,8 @@ def check(request):
 @login_required
 def auctions(request):
     obj = Auctions.objects.filter(isAuction=True).exclude(uploader=request.user)
-    print(obj)
-    print(obj.count())
+    # print(obj)
+    # print(obj.count())
     args = {
         "items" : obj,
         "count" : obj.count()
@@ -143,9 +127,17 @@ def Deleteauction(request):
     if request.method == "POST":
         slug = request.POST.get('slug', None)
         itr = SellItemInfo.objects.get(slug=slug)
+
         obj = Auctions.objects.filter(item=itr).exclude(uploader=request.user)
+        o = Auctions.objects.get(item=itr)
+        # print(o)
+        us = User.objects.get(username=o.biders)
         if(obj.count()>0):
             obj.delete()
+        n = Notification(user=us,to=o.uploader.username,fromm=o.biders,count=slug,description="selected")
+        m = Notification.objects.filter(user=us,count=slug,to=o.uploader.username)
+        if m.count()==0 :
+            n.save()
         return HttpResponseRedirect(reverse('User:auctions'))
 
 
@@ -202,7 +194,7 @@ def deleteitem(request):
         slug = request.POST.get('slug', None)
         obj = SellItemInfo.objects.filter(slug=slug)
         obb = SellItemInfo.objects.get(slug=slug)
-    
+
         p = purchaseInfo(user=request.user,itemname=slug,item_pic=obb.item_pic,buyer=name,price=price)
         p.save()
         if(obj.count()>0):
@@ -222,31 +214,57 @@ def Post(request):
 
         global other
         global iteuploader
+        global teruser
         other = request.POST.get('hide', None)
         itemname = request.POST.get('itemname', None)
         iteuploader = request.POST.get('iteuploader', None)
-        # print('asdfa'+itemname)
-        if other != request.user.username:
-            c = Chat(user=request.user, message=msg,fromm=other,to=request.user.username)
+        teruser = request.POST.get('docc',None)
+        # print(request.POST)
+        # print(teruser)
+        if iteuploader == request.user.username:
+            c = Chat(user=request.user, message=msg,fromm=teruser,to=request.user.username)
         else:
-            c = Chat(user=request.user, message=msg,fromm=nam,to=request.user.username)
+            c = Chat(user=request.user, message=msg,fromm=iteuploader,to=request.user.username)
         counter = SellItemInfo.objects.get(item_name=itemname)
-        n = Notification(user=request.user,to=request.user.username,fromm=other,count=counter.get_slug(),description=msg)
-        m = Notification.objects.filter(user=request.user,count=counter.get_slug())
-        if msg != '':
-            c.save()
-        if m.count()==0 and request.user.username != iteuploader:
-            n.save()
+        n = Notification(user=request.user,to=request.user.username,fromm=iteuploader,count=counter.get_slug(),description=msg)
+        if iteuploader == request.user.username:
+            m = Notification.objects.filter(user=request.user,count=counter.get_slug(),fromm=teruser)
+            if msg != '':
+                c.save()
+            if m.count()==0 and request.user.username != iteuploader:
+                n.save()
+            elif  m.count()==0 and  request.user.username == iteuploader:
+                nn = Notification(user=request.user,to=request.user.username,fromm=teruser,count=counter.get_slug(),description=msg)
+                nn.save()
+        else :
+            m = Notification.objects.filter(user=request.user,count=counter.get_slug(),to=request.user.username)
+            if msg != '':
+                c.save()
+            if m.count()==0 and request.user.username != iteuploader:
+                n.save()
+            elif  m.count()==0 and  request.user.username == iteuploader:
+                nn = Notification(user=request.user,to=request.user.username,fromm=teruser,count=counter.get_slug(),description=msg)
+                nn.save()
+
         return JsonResponse({ 'msg': msg, 'user': c.user.username })
     else:
         return HttpResponse('Request must be POST.')
 
 @login_required
 def Messages(request):
+
+
     c = Chat.objects.all()
-    # print('otnerr')
-    # print(c.user.username)
-    return render(request, 'firstapp/messages.html', {'chat': c,'other':other,'iteuploader':iteuploader })
+
+    use = User.objects.exclude(username=request.user.username)
+    # print(counter)
+    hhh = list(use.values('username'))
+    # print(json.dumps(hhh))
+    # print(c)
+    # print(request.user.username)
+    # print(iteuploader)
+    # print(teruser)
+    return render(request, 'firstapp/messages.html', {'chat': c,'other':teruser,'iteuploader':iteuploader,'use':json.dumps(hhh) })
 
 
 
@@ -266,36 +284,32 @@ def Likesupdate(request,slug=None):
 
 @login_required
 def Notifications(request,username='main'):
-    # counter = Notification.objects.all()
-    #
-    # # print(c.description)
-    # return render(request, 'firstapp/notification.html', {'counter': counter})
+
     if request.is_ajax():
-        counter = Notification.objects.exclude(to=request.user)
-        hhh = list(counter.values('to','description','count','id'))
-        bonus = UserProfileInfo.objects.exclude(user=request.user)
-        ggg = list(bonus.values('user','profilepic','user_id'))
-        items = SellItemInfo.objects.filter(uploader=request.user)
-        it = list(items.values('slug','uploader'))
+        counter = Notification.objects.filter(fromm=request.user.username)
+        # print(counter)
+        hhh = list(counter.values('to','fromm','description','count','id'))
+        index = 0
         lll = []
-        u = 0
-        result = list(counter.values('user','to','description','count','fromm'))
+        for u in hhh:
+            ss = User.objects.get(username=u.get('to'))
+            bonus = UserProfileInfo.objects.filter(user=ss)
+            # print(bonus)
+            ggg = list(bonus.values('user','profilepic','user_id'))
 
+            for o in ggg:
+                # print(o.get('profilepic'))
+                nnn = {
+                    'id' : o.get('user'),
+                    'profilepic' : o.get('profilepic'),
+                    'to' : u.get('to'),
+                    'description' : u.get('description'),
+                    'count' : u.get('count'),
+                    'fromm' : u.get('fromm')
+                }
+                lll.insert(index,nnn)
+                index+=1
 
-        for f, b in zip(ggg,result):
-            for o in it:
-
-                if(b.get('count')==o.get('slug') ):
-                    nnn = {
-                        'id' : f.get('user'),
-                        'profilepic' : f.get('profilepic'),
-                        'to' : b.get('to'),
-                        'description' : b.get('description'),
-                        'count' : b.get('count'),
-                        'fromm' : b.get('fromm')
-                    }
-                    lll.insert(u,nnn)
-                    u+=1
 
         # print(json.dumps(lll))
 
@@ -313,7 +327,7 @@ def combine(list1, list2):
 
 
 def allitems(request,type=None):
-    print(type)
+    # print(type)
     it = SellItemInfo.objects.values('item_type').distinct()
     items_list = SellItemInfo.objects.all().order_by("-timestemp")
     items_list = items_list.filter(
@@ -338,7 +352,7 @@ def allitems(request,type=None):
 
 def Filter(request,keywrd):
     u = User.objects.get(username=request.user.username)
-    counter = Notification.objects.exclude(user=request.user)
+    counter = Notification.objects.filter(fromm=request.user.username)
 
 
     if keywrd != 'showall':
@@ -346,7 +360,7 @@ def Filter(request,keywrd):
     else:
         keywrd = 'All'
         items_list = SellItemInfo.objects.all().order_by("-timestemp")
-    
+
     it = SellItemInfo.objects.values('item_type').distinct()
     queary = request.GET.get("q")
     if queary :
@@ -368,7 +382,7 @@ def Filter(request,keywrd):
     except:
         items = paginator.page(paginator.num_pages)
 
-    print(items_list)
+    # print(items_list)
     args = {'items' : items,'counter' : counter ,"c" : counter.count(),"page_request_var" : page_request_var,"it":it ,"key":keywrd}
     return args
 
@@ -396,10 +410,10 @@ def userhome(request,username=None):
         args = Filter(request,'console')
         return render(request,'firstapp/userhome.html',args)
     elif 'range' in request.POST:
-        print(request.POST['range'])
+        # print(request.POST['range'])
         a = request.POST['range']
         u = User.objects.get(username=request.user.username)
-        counter = Notification.objects.exclude(user=request.user)
+        counter = Notification.objects.filter(fromm=request.user.username)
         items_list = SellItemInfo.objects.filter(item_exprice__lte=a).order_by("-timestemp")
         it = SellItemInfo.objects.values('item_type').distinct()
         queary = request.GET.get("q")
@@ -422,13 +436,13 @@ def userhome(request,username=None):
         except:
             items = paginator.page(paginator.num_pages)
 
-        print(items_list)
+        # print(items_list)
         args = {'items' : items,'counter' : counter ,"c" : counter.count(),"page_request_var" : page_request_var,"it":it,"key":"All" }
         return render(request,'firstapp/userhome.html',args)
     else:
         u = User.objects.get(username=request.user.username)
-        counter = Notification.objects.exclude(user=request.user)
 
+        counter = Notification.objects.filter(fromm=request.user.username)
 
 
         items_list = SellItemInfo.objects.all().order_by("-timestemp")
@@ -453,7 +467,7 @@ def userhome(request,username=None):
         except:
             items = paginator.page(paginator.num_pages)
 
-        print(items_list)
+        # print(items_list)
         args = {'items' : items,'counter' : counter ,"c" : counter.count(),"page_request_var" : page_request_var,"it":it,"key":"All" }
         return render(request,'firstapp/userhome.html',args)
 
@@ -505,8 +519,11 @@ def showitem(request,slug=None,id=None):
     comments = Comments.objects.filter(item=instance);
 
 
-    c = Chat.objects.all()
-    v = Chat.objects.filter(fromm=other,user=request.user)
+    c = Chat.objects.filter(user=request.user)
+    if iteuploader == request.user.username:
+        v = Chat.objects.all()
+    else:
+        v = Chat.objects.filter(fromm=teruser)
     # u = request.get('id')
     global nam
     namw = ""
@@ -521,10 +538,11 @@ def showitem(request,slug=None,id=None):
         else:
             liked = "Like"
 
-    if slug!=None and request.user==instance.uploader:
+    if slug!=None:
         try:
-            ins = Notification.objects.get(count=slug)
-            i = Notification.objects.get(count=slug)
+            ins = Notification.objects.get(count=slug,fromm=request.user.username)
+            # print(ins)
+            i = Notification.objects.get(count=slug,fromm=request.user.username)
             namw = i.to
 
             ins.delete()
@@ -538,6 +556,11 @@ def showitem(request,slug=None,id=None):
         # print(ins)
 
 
+
+    use = User.objects.exclude(username=request.user.username)
+    # print(counter)
+    hhh = list(use.values('username'))
+    # print(json.dumps(hhh))
     # for r in instance:
         # r.delete()
     nam = namw
@@ -549,7 +572,8 @@ def showitem(request,slug=None,id=None):
         "liked": liked,
         "obj" : obj,
         "comments" : comments,
-        "v"    : v
+        "v"    : v,
+        "use" : json.dumps(hhh)
 
 
 
@@ -581,8 +605,7 @@ def sellitem(request):
             item.save()
             isposted = True
 
-        else :
-            print('Not possible')
+
     else:
         # userform = UserForm()
         selliteminfo = SellItemInfoForm()  #sett item forms
