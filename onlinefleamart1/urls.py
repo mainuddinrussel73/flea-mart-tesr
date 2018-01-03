@@ -12,8 +12,8 @@ from django.conf.urls import handler404,handler500
 urlpatterns = [
     url(r'^$',views.index,name='index'),
     url(r'^User/',include('User.urls',namespace="User")),
-    url(r'^fleamart/',include('firstapp.urls')),
-    
+    url(r'^fleamart/',include('firstapp.urls',namespace="firstapp")),
+
 
     # url(r'^$',include('firstapp.urls')),
     url(r'^jet/', include('jet.urls', 'jet')),

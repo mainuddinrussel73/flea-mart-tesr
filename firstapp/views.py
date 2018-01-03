@@ -7,8 +7,11 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect,HttpResponse
 from django.contrib.auth import authenticate,login as auth_login,logout
 from User.models import SellItemInfo
+from django.core.mail import send_mail
+from django.core.mail import EmailMessage
+from django.db.models import Q
 
-
+lock = True
 
 def error_404(request):
     return render(request,'firstapp/404.html')
@@ -21,7 +24,66 @@ def index(request):
     args = {'items' : items}
     return render(request,'firstapp/index.html', args,)
 
+def forgotPassword(request):
+    return render(request,'firstapp/forgotpassword.html')
 
+def Updatepass(request):
+    lock = UserProfileInfo.objects.get(user=request.user)
+    if lock.istimeout == True:
+        UserProfileInfo.objects.filter(user=request.user).update(istimeout=False)
+        return render(request,'firstapp/updatepass.html')
+    else:
+        context = {
+            'Notice':'Sorry Time out Occured'
+
+        }
+        return render(request,'firstapp/forgotpassword.html',context)
+
+def Set_password(request):
+    if request.POST:
+        username=request.POST.get("username")
+        password=request.POST.get("password")
+        user = User.objects.get(username=username)
+        if(not user):
+            print "No user"
+            context = {
+                'Notice':'Please User Correct Email Address'
+
+            }
+            return render(request,'firstapp/updatepass.html',context)
+        else:
+            # send_mail("Your PW", user.password , "admin@example.com", [email])
+
+            user.set_password(password)
+            user.save()
+            return HttpResponseRedirect(reverse('firstapp:login'))
+        return render(request,'firstapp/updatepass.html',context)
+
+def resetPassword(request):
+    if request.POST:
+        email=request.POST.get("email")
+        username=request.POST.get("username")
+        password=request.POST.get("password")
+        print (email)
+        user = User.objects.filter(username=username,email=email)
+        us = User.objects.filter(username=username,email=email)
+
+
+        print(user)
+        if(not user or user.count()==0):
+            print "No user"
+            context = {
+                'Notice':'Something is not correct'
+
+            }
+            return render(request,'firstapp/forgotpassword.html',context)
+        else:
+            # send_mail("Your PW", user.password , "admin@example.com", [email])
+            UserProfileInfo.objects.filter(user=request.user).update(istimeout=True)
+            email = EmailMessage('Your PW', "http://127.0.0.1:8000/fleamart/updatepass/" , to=[email])
+            email.send()
+            return HttpResponseRedirect(reverse('firstapp:login'))
+    return render(request,'firstapp/forgotpassword.html')
 @login_required
 def userlogout(request):
     logout(request)

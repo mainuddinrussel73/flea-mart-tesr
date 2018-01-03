@@ -148,6 +148,24 @@ STATICFILES_DIRS = [
 
 ]
 
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_PASSWORD = '01715436352'
+EMAIL_HOST_USER = 'mainuddinrusselbuet73@gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+DEFAULT_FROM_EMAIL = 'jack@fleamart.com'
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+# EMAIL_BACKEND = "sendgrid_backend.SendgridBackend"
+# EMAIL_HOST = 'smtp.sendgrid.net'
+# EMAIL_HOST_USER = 'mainuddinrussel'
+# EMAIL_HOST_PASSWORD = '01715Main'
+# EMAIL_PORT = 587
+# EMAIL_USE_TLS = True
+# SENDGRID_API_KEY = "Tb5n7jpOSLC2tTS3fUEiWA"
+
+
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 

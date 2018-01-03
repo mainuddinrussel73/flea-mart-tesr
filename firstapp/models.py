@@ -9,7 +9,8 @@ class UserProfileInfo(models.Model):
     profilepic = models.ImageField(upload_to='profilepics',blank=True)
     coverpic = models.ImageField(upload_to='overpics',blank=True)
     address = models.TextField(blank=True)
-
+    istimeout = models.BooleanField(default=False);
+    
     def __str__(self):
         return self.user.username
     def get_name(self):
