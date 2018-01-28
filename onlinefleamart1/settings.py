@@ -27,7 +27,7 @@ SECRET_KEY = 'b0bqz=a@hqtl=8i%jyh3jl7k+_(s1k^)h9mpq2e9p4h_ozmf-j'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [ ]
 
 
 # Application definition
@@ -47,7 +47,6 @@ INSTALLED_APPS = [
     'rest_framework',
     'embed_video',
     'pagination_bootstrap',
-
 
 ]
 
@@ -81,7 +80,6 @@ TEMPLATES = [
         },
     },
 ]
-
 
 
 WSGI_APPLICATION = 'onlinefleamart1.wsgi.application'
@@ -142,10 +140,14 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
+
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+SESSION_COOKIE_AGE = 10*3600 # set just 10 seconds to test
+SESSION_SAVE_EVERY_REQUEST = True
+# STATIC_ROOT = os.path.join(BASE_DIR, "static")  # user only for collecting static files else not 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     STATIC_DIR,
-
 ]
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

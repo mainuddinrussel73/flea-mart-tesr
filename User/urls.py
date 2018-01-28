@@ -14,6 +14,7 @@ urlpatterns=[
         url(r'^mapdetails/$',views.Mapdetails,name='mapdetails'),
         url(r'^mapdetailupdate/$',views.Mapdetailupdate,name='mapdetailupdate'),
         url(r'^(?P<slug>[\w-]+)likesupdate/$',views.Likesupdate,name='likesupdate'),
+        url(r'^rating/$',views.Rating,name='rating'), 
         url(r'^purchasehistory/$',views.Purchasehistory,name='history'),
         url(r'^(?P<slug>[\w-]+)details/$',views.showitem,name='details'),
         url(r'^(?P<slug>[\w-]+)delete/$',views.deleteitem,name='delete'),

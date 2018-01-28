@@ -97,13 +97,13 @@
 
 /* Carousel Item Background Images */
 .carousel-slider .carousel-item-eight {
-    background: url(../../../assets/pages/img/frontend-slider/online.jpg);
+    background: url(../../../assets/pages/img/frontend-slider/Foto.jpg);
     background-size: cover;
     background-position: center center;
 }
 
 .carousel-slider .carousel-item-nine {
-    background: url(../../../assets/pages/img/frontend-slider/shop.jpg);
+    background: url(../../../assets/pages/img/frontend-slider/some.jpg);
     background-size: cover;
     background-position: center center;
 }

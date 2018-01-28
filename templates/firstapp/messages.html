@@ -8,7 +8,7 @@
             </li>
         {% elif request.user.username == obj.fromm %}
             <li class="cont darker">
-                <img src="{{ obj.user.userprofileinfo.profilepic.url }}" alt="Avatar" class="right" style="width:100%;">
+                <img src="{{ obj.user.userprofileinfo.profilepic.url }}" alt="Avatar" class="left" style="width:100%;">
                 <p>{{ obj.user }} : {{ obj.message }}</p>
                 <span class="time-left">{{ obj.created }}</span>
             </li>
@@ -16,7 +16,7 @@
     {% elif iteuploader != request.user.username %}
         {% if request.user.username == obj.fromm %}
               <li class="cont darker">
-                  <img src="{{ obj.user.userprofileinfo.profilepic.url }}" alt="Avatar" class="right" style="width:100%;">
+                  <img src="{{ obj.user.userprofileinfo.profilepic.url }}" alt="Avatar" class="left" style="width:100%;">
                   <p>{{ obj.user }} : {{ obj.message }}</p>
                   <span class="time-left">{{ obj.created }}</span>
               </li>

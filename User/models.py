@@ -159,3 +159,13 @@ class purchaseInfo(models.Model):
     item_pic = models.ImageField(upload_to='history',blank=True)
     price  = models.CharField(max_length=50,blank=False)
     timestemp = models.DateTimeField(auto_now_add=True)
+    def __str__(self):
+        return self.user.username
+
+class RatingInfo(models.Model):
+    user = models.ForeignKey(User)
+    item = models.ForeignKey(SellItemInfo)
+    rate = models.CharField(max_length=50,blank=False)
+    def __str__(self):
+        return self.user.username
+

@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect,HttpResponse,JsonResponse
 from django.contrib.auth import authenticate,login as auth_login,logout
 from User.forms import SellItemInfoForm,CommentsForm,AuctionsForm
-from User.models import SellItemInfo,Chat,Notification,Comments,ServerInfo,Auctions,purchaseInfo
+from User.models import SellItemInfo,Chat,Notification,Comments,ServerInfo,Auctions,purchaseInfo,RatingInfo
 from django.core import serializers
 from django.forms.models import model_to_dict
 from itertools import chain,cycle
@@ -32,6 +32,8 @@ import ast
 import locale
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models import Q
+from django.db.models import Count
+from django.db.models.query import QuerySet
 # from django.core import serializers
 # json_serializer = serializers.get_serializer("json")()
 # companies = json_serializer.serialize(Notification.objects.all().order_by('id')[:5], ensure_ascii=False)
@@ -44,6 +46,59 @@ iteuploader = None
 slugg_ = None
 teruser = None
 
+
+
+def Rating(request):
+    if request.method == "POST":
+        rating = request.POST['dat']
+        slug = request.POST['slug']
+        print(rating)
+        print(slug)
+        ii = SellItemInfo.objects.get(slug=slug)
+        r = RatingInfo.objects.filter(user=request.user,item=ii)
+        u = RatingInfo.objects.all()
+        k = RatingInfo.objects.filter(item=ii).values('rate').annotate(total=Count('rate')).order_by('-rate')
+        
+        hh = list(k.values('rate','total'))
+        ll = []
+        rr = []
+        c = 0
+        for i in hh:
+            rr.insert(c,i.get('rate'))
+            ll.insert(c,i.get('total'))
+            c+=1
+
+        # print(rr)
+        # print(ll)
+        if r.count()==0:
+            rr = RatingInfo(user=request.user,item=ii,rate=rating)
+            rr.save()
+            k = RatingInfo.objects.filter(item=ii).values('rate').annotate(total=Count('rate')).order_by('-rate')
+        
+            hh = list(k.values('rate','total'))
+            ll = []
+            rr = []
+            c = 0
+            for i in hh:
+                rr.insert(c,i.get('rate'))
+                ll.insert(c,i.get('total'))
+                c+=1
+            return JsonResponse({ 'msg': "Thank You For Rating This Item" ,"d":"done","rr":ll,"lab":rr, "hh":hh })
+        else:
+            rr = RatingInfo.objects.filter(user=request.user,item=ii).update(rate = rating)
+            
+            k = RatingInfo.objects.filter(item=ii).values('rate').annotate(total=Count('rate')).order_by('-rate')
+        
+            hh = list(k.values('rate','total'))
+            ll = []
+            rr = []
+            c = 0
+            for i in hh:
+                rr.insert(c,i.get('rate'))
+                ll.insert(c,i.get('total'))
+                c+=1
+            return JsonResponse({ 'msg': "Thank You For Rating  again" ,"d":"done","rr":ll,"lab":rr, "hh":hh})
+    # return HttpResponse(rating)
 
 def json_serial(obj):
     """JSON serializer for objects not serializable by default json code"""
@@ -309,7 +364,15 @@ def Notifications(request,username='main'):
                 }
                 lll.insert(index,nnn)
                 index+=1
-
+        # print(request.session['username'])
+        try:
+            del request.session['username']
+            logout(request)
+            return HttpResponseRedirect(reverse('index'))
+        except KeyError:
+            pass
+        # print(request.session['username'])
+        
 
         # print(json.dumps(lll))
 
@@ -556,10 +619,13 @@ def showitem(request,slug=None,id=None):
         # print(ins)
 
 
-
+    # r      =     RatingInfo.objects.filter(item=instance)
+    r = RatingInfo.objects.filter(item=instance).values('rate').annotate(total=Count('rate')).order_by('-rate')
+    print(r)
     use = User.objects.exclude(username=request.user.username)
     # print(counter)
     hhh = list(use.values('username'))
+    
     # print(json.dumps(hhh))
     # for r in instance:
         # r.delete()
@@ -573,9 +639,8 @@ def showitem(request,slug=None,id=None):
         "obj" : obj,
         "comments" : comments,
         "v"    : v,
-        "use" : json.dumps(hhh)
-
-
+        "use" : json.dumps(hhh),
+        "r" : r,
 
      }
     return render(request, 'firstapp/details.html', args,)
