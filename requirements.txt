@@ -10,7 +10,7 @@ django-embed-video==1.1.2
 django-jet==1.0.6
 django-pagination-bootstrap==1.2.4
 django-widget-tweaks==1.4.1
-djangorestframework==3.7.3
+djangorestframework==3.11.2
 feedparser==5.2.1
 google-api-python-client==1.4.1
 gunicorn==19.7.1
